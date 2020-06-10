@@ -1,0 +1,222 @@
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  name: eu-central-1.prod.kubernetes.msilva.com
+spec:
+  additionalPolicies:
+    node: |
+      [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "autoscaling:DescribeAutoScalingGroups",
+            "autoscaling:DescribeAutoScalingInstances",
+            "autoscaling:DescribeTags",
+            "autoscaling:DescribeLaunchConfigurations",
+            "autoscaling:SetDesiredCapacity",
+            "autoscaling:TerminateInstanceInAutoScalingGroup"
+          ],
+          "Resource": "*"
+        }
+      ]
+  api:
+    loadBalancer:
+      type: Internal
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://msilva-kops-state-store/eu-central-1.prod.kubernetes.msilva.com
+  dnsZone: eu-central-1.prod.kubernetes.msilva.com
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-eu-central-1a
+      name: a
+    - instanceGroup: master-eu-central-1b
+      name: b
+    - instanceGroup: master-eu-central-1a
+      name: c
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-eu-central-1a
+      name: a
+    - instanceGroup: master-eu-central-1b
+      name: b
+    - instanceGroup: master-eu-central-1c
+      name: c
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubeDNS:
+    provider: CoreDNS
+  kubelet:
+    featureGates:
+      ExpandPersistentVolumes: "true"
+      PodPriority: "true"
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.17.0
+  masterInternalName: api.internal.eu-central-1.prod.kubernetes.msilva.com
+  masterPublicName: api.eu-central-1.prod.kubernetes.msilva.com
+  networkCIDR: 172.28.0.0/16
+  networkID: vpc-0325655b3a0215892
+  networking:
+    calico:
+      logSeverityScreen: warning
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.28.1.0/24
+    name: eu-central-1a
+    id: subnet-0d03a503d090cc310
+    type: Private
+    zone: eu-central-1a
+    egress: nat-0a7085ca736dc7e57
+  - cidr: 172.28.2.0/24
+    name: eu-central-1b
+    id: subnet-042141504d92aa0c9
+    type: Private
+    zone: eu-central-1b
+    egress: nat-0982c58b68ca1e74c
+  - cidr: 172.28.3.0/24
+    name: eu-central-1c
+    id: subnet-027a6082a235ac861
+    type: Private
+    zone: eu-central-1c
+    egress: nat-0da8a5e0fed010e94
+  - cidr: 172.28.64.0/24
+    name: utility-eu-central-1a
+    id: subnet-096d7e34e6e0c327b
+    type: Utility
+    zone: eu-central-1a
+  - cidr: 172.28.65.0/24
+    name: utility-eu-central-1b
+    id: subnet-048bf6adff40ddc42
+    type: Utility
+    zone: eu-central-1b
+  - cidr: 172.28.66.0/24
+    name: utility-eu-central-1c
+    id: subnet-0a3c7b403f99e26bd
+    type: Utility
+    zone: eu-central-1c
+  topology:
+    dns:
+      type: private
+    masters: private
+    nodes: private
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: eu-central-1.prod.kubernetes.msilva.com
+  name: master-eu-central-1a
+spec:
+  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
+  machineType: t2.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-eu-central-1a
+  role: Master
+  subnets:
+  - eu-central-1a
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: eu-central-1.prod.kubernetes.msilva.com
+  name: master-eu-central-1b
+spec:
+  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
+  machineType: t2.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-eu-central-1b
+  role: Master
+  subnets:
+  - eu-central-1b
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: eu-central-1.prod.kubernetes.msilva.com
+  name: master-eu-central-1c
+spec:
+  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
+  machineType: t2.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-eu-central-1c
+  role: Master
+  subnets:
+  - eu-central-1c
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: eu-central-1.prod.kubernetes.msilva.com
+  name: nodes-eu-central-1a
+spec:
+  cloudLabels:
+    k8s.io/cluster-autoscaler/enabled: "true"
+    kubernetes.io/cluster/eu-central-1.prod.kubernetes.msilva.com: "true"
+  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
+  machineType: t2.medium
+  maxPrice: "0.22"
+  maxSize: 5
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes-eu-central-1a
+  role: Node
+  subnets:
+  - eu-central-1a
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: eu-central-1.prod.kubernetes.msilva.com
+  name: nodes-eu-central-1b
+spec:
+  cloudLabels:
+    k8s.io/cluster-autoscaler/enabled: "true"
+    kubernetes.io/cluster/eu-central-1.prod.kubernetes.msilva.com: "true"
+  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
+  machineType: t2.medium
+  maxPrice: "0.22"
+  maxSize: 5
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes-eu-central-1b
+  role: Node
+  subnets:
+  - eu-central-1b
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: eu-central-1.prod.kubernetes.msilva.com
+  name: nodes-eu-central-1c
+spec:
+  cloudLabels:
+    k8s.io/cluster-autoscaler/enabled: "true"
+    kubernetes.io/cluster/eu-central-1.prod.kubernetes.msilva.com: "true"
+  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
+  machineType: t2.medium
+  maxPrice: "0.22"
+  maxSize: 5
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes-eu-central-1c
+  role: Node
+  subnets:
+  - eu-central-1c

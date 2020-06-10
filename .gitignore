@@ -1,0 +1,12 @@
+# tfplan-out, .terraform and .venv directories
+tfplan-out
+.terraform
+__pycache__
+.venv
+
+# tfstate and .pip-installed files
+*.tfstate
+*.tfstate.*
+.pip-installed
+/.idea/
+.terraform/.terraform/*
